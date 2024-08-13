@@ -4,6 +4,7 @@ import dotenv from "dotenv";
 import cors from "cors";
 import userRoute from "./routes/user.js";
 import gameRoute from "./routes/game.js";
+import isAvailable from "./routes/isAvailable.js";
 const app = express();
 dotenv.config();
 const port = process.env.Port;
@@ -15,6 +16,7 @@ app.use(cors());
 // routes:
 app.use("/user", userRoute);
 app.use("/game", gameRoute);
+app.use("/isAvailable", isAvailable);
 
 mongoose.connect(url);
 
