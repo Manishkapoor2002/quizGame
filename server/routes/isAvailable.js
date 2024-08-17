@@ -24,8 +24,6 @@ isAvailable.get("/username/:username", async (req, res) => {
 });
 isAvailable.get("/email/:email", async (req, res) => {
   const { email } = req.params;
-  console.log(email);
-
   if (!email) {
     return res.json({
       message: "email is mandatory field",

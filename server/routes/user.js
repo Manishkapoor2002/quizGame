@@ -147,7 +147,7 @@ userRoute.get("/signup", async (req, res) => {
 });
 
 // login route:
-userRoute.get("/login", async (req, res) => {
+userRoute.post("/login", async (req, res) => {
   const { email, password } = req.body;
 
   if (!email || !password) {
