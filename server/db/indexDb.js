@@ -5,7 +5,11 @@ const userSchema = new Schema({
   username: { type: String, required: true, unique: true, index: true },
   email: { type: String, required: true, unique: true, index: true },
   phoneNumber: { type: Number, required: true, unique: true, index: true },
-  profilePicture: { type: String, default: "" },
+  profilePicture: {
+    type: String,
+    default:
+      "http://res.cloudinary.com/dzfvpd08i/image/upload/v1717259736/minMax-post-2024-6-1%2022:5:34.png",
+  },
   premiumUser: { type: Boolean, required: true, default: false },
   subscriptionExpireTime: { type: Date, default: Date.now },
   personalDetails: {
@@ -56,6 +60,7 @@ const userPersonalDetailSchema = new Schema({
     startYear: { type: Date, default: null },
     finishYear: { type: Date, default: null },
   },
+  DOB: { type: Date, default: null },
 });
 
 // User Ranking Schema

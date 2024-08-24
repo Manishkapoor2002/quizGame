@@ -4,7 +4,6 @@ import {
     Button,
     Typography,
     TextField,
-    Link,
     Grid,
     InputAdornment,
     IconButton,
@@ -17,12 +16,16 @@ import {
     emailValidation,
     passwordValidation,
     confirmPasswords,
+    phoneNumberValidation,
 } from '../validation';
+import { useNavigate } from 'react-router-dom';
+import axios from 'axios';
 
 type FormData = {
     username: string;
     email: string;
     password: string;
+    phoneNumber: string
 };
 
 type ValidateField = {
@@ -30,19 +33,23 @@ type ValidateField = {
     email: boolean;
     password: boolean;
     confirmPassword: boolean;
+    phoneNumber: boolean
 };
 
 const SignIn: React.FC = () => {
+    const navigate = useNavigate()
     const [formData, setFormData] = useState<FormData>({
         username: "",
         email: "",
         password: "",
+        phoneNumber: ""
     });
     const [validate, setValidate] = useState<ValidateField>({
         username: true,
         email: true,
         password: true,
         confirmPassword: true,
+        phoneNumber: true
     });
     const [showPassword, setShowPassword] = useState<boolean>(false);
     const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
@@ -92,6 +99,18 @@ const SignIn: React.FC = () => {
             confirmPassword: result,
         }));
     }, 2000);
+    const debouncePhoneNumber = debounce(async (phoneNumber: string) => {
+        const result = await phoneNumberValidation(phoneNumber);
+        setValidate((data) => ({
+            ...data,
+            phoneNumber: result,
+        }));
+        setFormData((data) => ({
+            ...data,
+            phoneNumber,
+        }));
+
+    })
 
     useEffect(() => {
         return () => {
@@ -106,29 +125,49 @@ const SignIn: React.FC = () => {
         e.preventDefault();
         setIsSubmitting(true);
 
-        const { email, username, password } = formData;
+        const { email, username, password, phoneNumber } = formData;
 
-        if (!email || !username || !password) {
+        if (!email || !username || !password && !phoneNumber) {
             alert("All Fields are required!");
             setIsSubmitting(false);
             return;
         }
-
         const isEmailValid = validate.email;
         const isUsernameValid = validate.username;
         const isPasswordValid = validate.password;
         const isConfirmPasswordValid = validate.confirmPassword;
+        const isPhoneNumberValid = validate.phoneNumber
 
-        if (!isEmailValid || !isUsernameValid || !isPasswordValid || !isConfirmPasswordValid) {
+        if (!isEmailValid || !isUsernameValid || !isPasswordValid || !isConfirmPasswordValid && !isPhoneNumberValid) {
             alert("Please correct the form errors before submitting.");
             setIsSubmitting(false);
             return;
         }
 
-        setInterval(() => {
-            setIsSubmitting(false);
-        }, 3000)
-
+        try {
+            const result = await axios.post("http://localhost:3000/user/signup", {
+                email: formData.email,
+                password: formData.password,
+                username: formData.username,
+                phoneNumber: parseInt(formData.phoneNumber)
+            });
+            if (result && result.data.message === "Successfully Signed Up") {
+                setFormData({
+                    username: "",
+                    email: "",
+                    password: "",
+                    phoneNumber: ""
+                })
+                localStorage.setItem("token", `Bearer ${result.data.token}`);
+                localStorage.setItem("userId", `${result.data.userId}`);
+                alert("successfully loged in");
+                return;
+            }
+        } catch (err) {
+            alert("An unexpected error occurred");
+        } finally {
+            setIsSubmitting(false)
+        }
     };
 
     return (
@@ -146,7 +185,7 @@ const SignIn: React.FC = () => {
                     padding: 4,
                     minHeight: '100vh'
                 }}
-            > 
+            >
                 <Typography component="h1" variant="h4" sx={{ mb: 2, fontWeight: 'bold' }}>
                     Sign in
                 </Typography>
@@ -177,7 +216,20 @@ const SignIn: React.FC = () => {
                         name="email"
                         autoComplete="email"
                         onChange={(e) => debounceEmail(e.target.value)}
-                        helperText={!validate.email ? 'Invalid email address' : ''}
+                        helperText={!validate.email ? 'Invalid or unavaibale email address' : ''}
+                    />
+                    <TextField
+                        error={!validate.phoneNumber}
+                        margin="normal"
+                        required
+                        fullWidth
+                        id="phoneNumber"
+                        label="Phone Number"
+                        name="email"
+                        autoComplete="email"
+                        type='tel'
+                        onChange={(e) => debouncePhoneNumber(e.target.value)}
+                        helperText={!validate.phoneNumber ? 'Please enter a valid Indian phone number or this number is already in use' : ''}
                     />
                     <TextField
                         error={!validate.password}
@@ -190,7 +242,7 @@ const SignIn: React.FC = () => {
                         id="password"
                         autoComplete="current-password"
                         onChange={(e) => debouncePassword(e.target.value)}
-                        helperText={!validate.password ? 'Invalid password' : ''}
+                        helperText={!validate.password ? 'Weak password' : ''}
                         InputProps={{
                             endAdornment: (
                                 <InputAdornment position="end">
@@ -227,10 +279,15 @@ const SignIn: React.FC = () => {
                         {isSubmitting ? 'Submitting...' : 'Sign In'}
                     </Button>
                     <Grid container justifyContent="flex-end">
-                        <Grid item>
-                            <Link href="#" variant="body2">
-                                Already have an Account? Log in
-                            </Link>
+
+                        <Grid item onClick={() => {
+                            navigate('/login')
+                        }}
+                            sx={{
+                                cursor: 'pointer',
+                                color: '#1976d2',
+                            }}>
+                            Already have an Account? Log in
                         </Grid>
                     </Grid>
                 </Box>

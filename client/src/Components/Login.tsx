@@ -4,7 +4,6 @@ import {
     Button,
     Typography,
     TextField,
-    Link,
     Grid,
     InputAdornment,
     IconButton,
@@ -12,12 +11,22 @@ import {
 import { VisibilityOff, Visibility } from '@mui/icons-material';
 import Loginbackground from "../images/Loginbackground.jpeg";
 import axios from 'axios';
+import { useNavigate } from 'react-router-dom';
+import { useRecoilState, useSetRecoilState } from 'recoil';
+import { authState, userState } from '../store/userAtom';
+import { userStateType } from '../global/types';
 type FormData = {
     email: string;
     password: string;
 };
 
 const Login = () => {
+    const navigate = useNavigate();
+
+    const [auth, setAuth] = useRecoilState(authState)
+    const setcurrentUserState = useSetRecoilState<userStateType | null>(userState);
+
+
     const [formData, setFormData] = useState<FormData>({
         email: "",
         password: ""
@@ -46,7 +55,15 @@ const Login = () => {
                     password: ""
                 })
                 localStorage.setItem("token", `Bearer ${result.data.token}`);
+                localStorage.setItem("userId", `${result.data.userId}`);
                 alert("successfully loged in");
+                setAuth(true)
+                setcurrentUserState({
+                    userId: result.data.userId,
+                    profilePicture: result.data.profilePicture,
+                    username: result.data.username,
+                    isPremiumUser: result.data.isPremiumUser
+                })
                 return;
             }
             alert(result.data.message)
@@ -54,11 +71,47 @@ const Login = () => {
             alert("An unexpected error occurred");
         } finally {
             setIsSubmitting(false)
-            
         }
-
     };
 
+
+    if (auth) {
+        return (
+            <div style={{
+                display: 'flex',
+                justifyContent: 'center',
+                alignItems: 'center',
+                height: '90vh',
+                flexDirection: 'column',
+            }}>
+                <div>
+
+                    <div style={{
+                        display: 'flex',
+                        justifyContent: 'center',
+                        alignItems: 'center',
+
+                    }}>
+                        <Typography component="h1" variant="h5" align="center">Your are already Loged in !! </Typography>
+                    </div>
+                    <Button type="submit"
+                        fullWidth
+                        variant="contained"
+                        sx={{ mt: 3, mb: 2 }} onClick={() => {
+                            navigate('/')
+                        }}>Go to Home page</Button>
+
+                    <Button type="submit"
+                        fullWidth
+                        variant="contained"
+                        sx={{ mt: 3, mb: 2 }} onClick={() => {
+                            localStorage.setItem('token', "");
+                            setAuth(false)
+                        }}>Log out</Button>
+                </div>
+            </div>
+        )
+    }
     return (
         <Grid container spacing={2} sx={{ height: '100%' }}>
             <Grid
@@ -138,10 +191,14 @@ const Login = () => {
                         {isSubmitting ? 'Submitting...' : 'Log In'}
                     </Button>
                     <Grid container justifyContent="flex-end">
-                        <Grid item>
-                            <Link href="#" variant="body2">
-                                Don't have account yet? Sign up
-                            </Link>
+                        <Grid item onClick={() => {
+                            navigate('/signup')
+                        }}
+                            sx={{
+                                cursor: 'pointer',
+                                color: '#1976d2',
+                            }}>
+                            Don't have account yet? Sign up
                         </Grid>
                     </Grid>
                 </Box>
@@ -154,12 +211,13 @@ const Login = () => {
                     display: { xs: 'none', md: 'flex' },
                     color: 'white',
                     height: '100vh',
-                    objectFit: 'cover'
+                    objectFit: 'cover',
                 }}
             >
                 <img
                     src={Loginbackground}
                     alt="background"
+
                 />
             </Grid>
         </Grid>

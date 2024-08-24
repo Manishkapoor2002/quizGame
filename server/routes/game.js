@@ -19,44 +19,6 @@ dotenv.config();
 
 const gameRoute = express.Router();
 
-// updating rankings of the user on the basis of totalScore
-gameRoute.post("/updateRank", async (req, res) => {
-  try {
-    const data = await UserRank.find({}).sort({ totalScore: "desc" });
-
-    if (!data.length) {
-      return res.json({
-        message: "Something went wrong",
-      });
-    }
-
-    const bulkOps = data.map((user, index) => {
-      const newRank = index + 1;
-      const minRank =
-        user.minRank === 0 ? newRank : Math.min(user.minRank, newRank);
-
-      return {
-        updateOne: {
-          filter: { _id: user._id },
-          update: { currentRank: newRank, minRank: minRank },
-        },
-      };
-    });
-
-    await UserRank.bulkWrite(bulkOps);
-
-    res.json({
-      message: "Updated",
-      bulkOps,
-    });
-  } catch (error) {
-    res.json({
-      message: "Something went wrong",
-      error: error.message,
-    });
-  }
-});
-
 // start normal quiz
 gameRoute.post("/startNormalQuiz", authenticationJWT, async (req, res) => {
   const username = req.user.username;
@@ -123,7 +85,6 @@ gameRoute.post("/startNormalQuiz", authenticationJWT, async (req, res) => {
       message: "Questions sent successfully",
       questionsObj,
       quizId: newQuiz._id,
-      expireGameTime,
     });
   } catch (err) {
     res.json({
@@ -132,10 +93,11 @@ gameRoute.post("/startNormalQuiz", authenticationJWT, async (req, res) => {
     });
   }
 });
-// start premuim quiz:
 
+// start premuim quiz:
 gameRoute.post("/startPremiumQuiz", authenticationJWT, async (req, res) => {
   const { difficultyLevel, category } = req.body;
+  
 
   if (!difficultyLevel || !category) {
     return res.json({
@@ -314,14 +276,12 @@ gameRoute.post(
       });
     }
 
-    console.log(quizId);
     try {
       const [quiz, user] = await Promise.all([
         PremiumQuiz.findById(quizId),
         User.findOne({ username }),
       ]);
 
-      console.log(user);
       if (!user) {
         return res.json({
           message: "User not found",
@@ -384,56 +344,8 @@ gameRoute.post(
   }
 );
 // get previous premium quizes of an user acc. to pageNumber to reduce server and client load:
-gameRoute.get(
-  "/getAllPremiumQuizzes/:username/:pageNumber",
-  async (req, res) => {
-    const { username, pageNumber } = req.params;
-
-    const page = parseInt(pageNumber);
-    if (isNaN(page) || page <= 0) {
-      return res.json({
-        message: "Page number must be a positive integer",
-      });
-    }
-
-    if (!username) {
-      return res.json({
-        message: "Username is a required field",
-      });
-    }
-
-    const pageSize = 10;
-    const start = (page - 1) * pageSize;
-
-    try {
-      const user = await User.findOne({ username });
-      if (!user) {
-        return res.json({
-          message: "User not found",
-        });
-      }
-
-      const allQuizzes = await PremiumQuiz.find({ userId: user._id })
-        .sort({ expireGameTime: "desc" })
-        .skip(start)
-        .limit(pageSize);
-
-      return res.json({
-        message: "Quizzes fetched successfully",
-        allQuizzes,
-      });
-    } catch (err) {
-      res.json({
-        message: "Something went wrong",
-        error: err.message,
-      });
-    }
-  }
-);
-
-// get previous quizes of an user acc. to pageNumber to reduce server and client load:
-gameRoute.get("/getAllQuizzes/:username/:pageNumber", async (req, res) => {
-  const { username, pageNumber } = req.params;
+gameRoute.get("/getAllPremiumQuizzes/:userId/:pageNumber", async (req, res) => {
+  const { userId, pageNumber } = req.params;
 
   const page = parseInt(pageNumber);
   if (isNaN(page) || page <= 0) {
@@ -442,9 +354,9 @@ gameRoute.get("/getAllQuizzes/:username/:pageNumber", async (req, res) => {
     });
   }
 
-  if (!username) {
+  if (!userId) {
     return res.json({
-      message: "Username is a required field",
+      message: "userId is a required field",
     });
   }
 
@@ -452,17 +364,16 @@ gameRoute.get("/getAllQuizzes/:username/:pageNumber", async (req, res) => {
   const start = (page - 1) * pageSize;
 
   try {
-    const user = await User.findOne({ username });
-    if (!user) {
-      return res.json({
-        message: "User not found",
-      });
-    }
-
-    const allQuizzes = await Quiz.find({ userId: user._id })
+    const allQuizzes = await PremiumQuiz.find({ userId })
       .sort({ expireGameTime: "desc" })
       .skip(start)
       .limit(pageSize);
+
+    if (allQuizzes.length === 0) {
+      return res.json({
+        message: "No more Quizzes",
+      });
+    }
 
     return res.json({
       message: "Quizzes fetched successfully",
@@ -475,4 +386,158 @@ gameRoute.get("/getAllQuizzes/:username/:pageNumber", async (req, res) => {
     });
   }
 });
+
+// get previous quizes of an user acc. to pageNumber to reduce server and client load:
+gameRoute.get("/getAllQuizzes/:userId/:pageNumber", async (req, res) => {
+  const { userId, pageNumber } = req.params;
+
+  const page = parseInt(pageNumber);
+  if (isNaN(page) || page <= 0) {
+    return res.json({
+      message: "Page number must be a positive integer",
+    });
+  }
+
+  if (!userId) {
+    return res.json({
+      message: "UserID is a required field",
+    });
+  }
+
+  const pageSize = 10;
+  const start = (page - 1) * pageSize;
+
+  try {
+    const allQuizzes = await Quiz.find({ userId })
+      .sort({ expireGameTime: "desc" })
+      .skip(start)
+      .limit(pageSize);
+
+    if (allQuizzes.length === 0) {
+      return res.json({
+        message: "No more Quizzes",
+      });
+    }
+
+    return res.json({
+      message: "Quizzes fetched successfully",
+      allQuizzes,
+    });
+  } catch (err) {
+    res.json({
+      message: "Something went wrong",
+      error: err.message,
+    });
+  }
+});
+
+gameRoute.get("/leaderBoard/:pageNumber", async (req, res) => {
+  const { pageNumber } = req.params;
+
+  const page = parseInt(pageNumber);
+  if (isNaN(page) || page <= 0) {
+    return res.json({
+      message: "Page number must be a positive integer",
+    });
+  }
+
+  const pageSize = 10;
+  const start = (page - 1) * pageSize;
+
+  try {
+    const list = await User.find({})
+      .select("username  profilePicture rankings totalScore")
+      .populate({
+        path: "rankings",
+        select: ["currentRank", "totalScore"],
+      })
+      .skip(start)
+      .limit(pageSize);
+
+    list.sort((a, b) => a.rankings.currentRank - b.rankings.currentRank);
+
+    if (list.length === 0) {
+      return res.json({
+        message: "No more Users",
+      });
+    }
+
+    const formattedList = list.map((user) => ({
+      username: user.username,
+      userId: user._id,
+      profilepic: user.profilePicture,
+      currentRank: user.rankings.currentRank,
+      totalScore: user.rankings.totalScore,
+    }));
+
+    res.json({
+      message: "List Fetched Successfully",
+      list: formattedList,
+    });
+  } catch (err) {
+    res.json({
+      message: "Something went wrong",
+      errorType: err.message,
+    });
+  }
+});
+
+gameRoute.get("/getQuizScore/:quizId", authenticationJWT, async (req, res) => {
+  const { quizId } = req.params;
+  if (!quizId) {
+    return res.json({
+      message: "QuizId is an mandatory field",
+    });
+  }
+  try {
+    const quiz = await Quiz.findById(quizId);
+    if (!quiz) {
+      return res.json({
+        message: "Quiz not Found",
+      });
+    }
+
+    res.json({
+      message: "Quiz find successfully",
+      quiz,
+    });
+  } catch (err) {
+    res.json({
+      message: "Something went wrong",
+      errorType: err.messsage,
+    });
+  }
+});
+
+gameRoute.get(
+  "/getPremiumQuizScore/:quizId",
+  authenticationJWT,
+  async (req, res) => {
+    const { quizId } = req.params;
+    if (!quizId) {
+      return res.json({
+        message: "QuizId is an mandatory field",
+      });
+    }
+    try {
+      const quiz = await PremiumQuiz.findById(quizId);
+      if (!quiz) {
+        return res.json({
+          message: "Quiz not Found",
+        });
+      }
+
+      res.json({
+        message: "Quiz find successfully",
+        quiz,
+      });
+    } catch (err) {
+      res.json({
+        message: "Something went wrong",
+        errorType: err.messsage,
+      });
+    }
+  }
+);
+
 export default gameRoute;

@@ -54,8 +54,27 @@ userRoute.post("/imageUrlGen", upload.single("image"), async (req, res) => {
   }
 });
 
+// about me:
+userRoute.get("/me", authenticationJWT, async (req, res) => {
+  try {
+    const user = await User.findOne({ username: req.user.username });
+    res.json({
+      message: "Logged in",
+      username: req.user.username,
+      userId: req.user.userId,
+      profilePicture: req.user.profilePicture,
+      isPremiumUser: user.premiumUser,
+    });
+  } catch (err) {
+    res.json({
+      message: "Something went wrong",
+      errorType: err.message,
+    });
+  }
+});
+
 // signup route:
-userRoute.get("/signup", async (req, res) => {
+userRoute.post("/signup", async (req, res) => {
   const { username, password, email, phoneNumber, profilePicture } = req.body;
 
   if (!username || !password || !email || !phoneNumber) {
@@ -129,14 +148,26 @@ userRoute.get("/signup", async (req, res) => {
 
     await newPassword.save();
 
-    const token = jwt.sign({ username, email }, SecurityKey, {
-      expiresIn: "7d",
-    });
+    const token = jwt.sign(
+      {
+        username,
+        email,
+        profilePicture: newUser.profilePicture,
+        userId: newUser._id,
+      },
+      SecurityKey,
+      {
+        expiresIn: "7d",
+      }
+    );
 
     return res.json({
       message: "Successfully Signed Up",
       token,
       userId: newUser._id,
+      profilePicture: newUser.profilePicture,
+      username: newUser.username,
+      isPremiumUser: newUser.premiumUser,
     });
   } catch (err) {
     res.json({
@@ -182,14 +213,26 @@ userRoute.post("/login", async (req, res) => {
       });
     }
 
-    const token = jwt.sign({ username: user.username, email }, SecurityKey, {
-      expiresIn: "7d",
-    });
+    const token = jwt.sign(
+      {
+        username: user.username,
+        email,
+        profilePicture: user.profilePicture,
+        userId: user._id,
+      },
+      SecurityKey,
+      {
+        expiresIn: "7d",
+      }
+    );
 
     return res.json({
       message: "Successfully loged in",
       token,
       userId: user._id,
+      profilePicture: user.profilePicture,
+      username: user.username,
+      isPremiumUser: user.premiumUser,
     });
   } catch (err) {
     res.json({
@@ -212,8 +255,10 @@ userRoute.get("/profile/:username", async (req, res) => {
       details: {
         userId: user._id,
         username: user.username,
+        isPremiumUser: user.premiumUser,
         personalDetails: user.personalDetails,
         rankings: user.rankings,
+        profilePicture: user.profilePicture,
       },
     });
   }
@@ -221,57 +266,6 @@ userRoute.get("/profile/:username", async (req, res) => {
   res.json({
     message: "User not found/exist",
   });
-});
-
-// edit profile:
-userRoute.post("/editProfile", authenticationJWT, async (req, res) => {
-  const username = req.user.username;
-  if (!username) {
-    return res.json({
-      message: "userId is required to edit profile",
-    });
-  }
-  const { socialHandles, location, education } = req.body;
-
-  if (!socialHandles || !location || !education) {
-    return res.json({
-      message: "Fileds are undefined or null",
-    });
-  }
-
-  try {
-    const user = await User.findOne({ username });
-
-    if (!user) {
-      return res.json({
-        message: "User not found",
-      });
-    }
-    const newDetails = {
-      socialHandles,
-      location,
-      education,
-    };
-    const details = await UserPersonalDetail.findByIdAndUpdate(
-      user.personalDetails,
-      newDetails,
-      { new: true }
-    );
-    if (!details) {
-      return res.json({
-        message: "Something went wrong",
-        errorType: "Error during updating details",
-      });
-    }
-    res.json({
-      message: "Profile edit successfully",
-    });
-  } catch (err) {
-    res.json({
-      message: "Something went wrong",
-      errorType: err.message,
-    });
-  }
 });
 
 userRoute.post("/purchasePremuim", authenticationJWT, async (req, res) => {
@@ -304,6 +298,43 @@ userRoute.post("/purchasePremuim", authenticationJWT, async (req, res) => {
 
     res.json({
       message: "Successfully purchased premuim",
+    });
+  } catch (err) {
+    res.json({
+      message: "Something went wrong",
+      errorType: err.message,
+    });
+  }
+});
+
+userRoute.get("/getQuizzesSummary/:userId", async (req, res) => {
+  const { userId } = req.params;
+  if (!userId) {
+    return res.json({
+      message: "UserId is required Field",
+    });
+  }
+  try {
+    const [normalQuizSummary, premiumQuizSummary] = await Promise.all([
+      QuizSummary.findOne({ userId }),
+      PremuimQuizSummary.findOne({ userId }),
+    ]);
+
+    if (!normalQuizSummary) {
+      return res.json({
+        message: "normalQuizSumary not found",
+      });
+    }
+    if (!premiumQuizSummary) {
+      return res.json({
+        message: "premiumQuizSummary not found",
+      });
+    }
+
+    res.json({
+      message: "Quiz Summary Send Successfully",
+      normalQuizSummary,
+      premiumQuizSummary,
     });
   } catch (err) {
     res.json({
