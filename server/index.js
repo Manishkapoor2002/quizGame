@@ -5,7 +5,7 @@ import cors from "cors";
 import userRoute from "./routes/user.js";
 import gameRoute from "./routes/game.js";
 import isAvailable from "./routes/isAvailable.js";
-import { callUpdatedRank } from "./helpfn.js";
+import callUpdatedRank  from "./helpfn.js";
 import settingRouter from "./routes/settings.js";
 const app = express();
 dotenv.config();

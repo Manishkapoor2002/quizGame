@@ -49,6 +49,7 @@ const userPersonalDetailSchema = new Schema({
   socialHandles: {
     facebook: { type: String, default: "" },
     instagram: { type: String, default: "" },
+    github: { type: String, default: "" },
     linkedin: { type: String, default: "" },
     x: { type: String, default: "" },
     userWebsite: { type: String, default: "" },
@@ -61,6 +62,7 @@ const userPersonalDetailSchema = new Schema({
     finishYear: { type: Date, default: null },
   },
   DOB: { type: Date, default: null },
+  Gender :{type : String,default :null}
 });
 
 // User Ranking Schema
