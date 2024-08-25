@@ -89,7 +89,7 @@ const PersonDetails: React.FC<MyPersonlDetailProps> = ({ userDetails }) => {
                                     )}
 
                                     {userDetails.personalDetails?.DOB && (
-                                        <DetailItem><strong>DOB:</strong> {userDetails.personalDetails.DOB.toLocaleDateString()}</DetailItem>
+                                        <DetailItem><strong>DOB:</strong> {userDetails.personalDetails.DOB.toString().substring(0,10)}</DetailItem>
                                     )}
 
                                     {userDetails.personalDetails?.education && (userDetails.personalDetails.education.schoolName != "" || userDetails.personalDetails.education.course != "" || userDetails.personalDetails.education.startYear || userDetails.personalDetails.education.finishYear) && (
@@ -116,7 +116,7 @@ const PersonDetails: React.FC<MyPersonlDetailProps> = ({ userDetails }) => {
                             </Grid>
                             <Grid item xs={12} md={3}>
                                 <Box padding={2}>
-                                    {userDetails.personalDetails?.socialHandles && (userDetails.personalDetails?.socialHandles.facebook != "" || userDetails.personalDetails?.socialHandles.instagram != "" || userDetails.personalDetails?.socialHandles.linkedin != "" || userDetails.personalDetails?.socialHandles.x != "" || userDetails.personalDetails?.socialHandles.userWebsite != "") && (
+                                    {userDetails.personalDetails?.socialHandles && (userDetails.personalDetails?.socialHandles.facebook != "" || userDetails.personalDetails?.socialHandles.instagram != "" || userDetails.personalDetails?.socialHandles.linkedin != "" || userDetails.personalDetails?.socialHandles.x != "" || userDetails.personalDetails?.socialHandles.userWebsite != "" || userDetails.personalDetails?.socialHandles.github != "") && (
                                         <Box marginTop={2}>
                                             <DetailItem>
                                                 <strong>Social Handles:</strong>
@@ -125,6 +125,11 @@ const PersonDetails: React.FC<MyPersonlDetailProps> = ({ userDetails }) => {
                                                 {userDetails.personalDetails.socialHandles.facebook && (
                                                     <Link href={userDetails.personalDetails.socialHandles.facebook} target="_blank" rel="noopener">
                                                         Facebook
+                                                    </Link>
+                                                )}
+                                                 {userDetails.personalDetails.socialHandles.github && (
+                                                    <Link href={userDetails.personalDetails.socialHandles.github} target="_blank" rel="noopener">
+                                                        Github
                                                     </Link>
                                                 )}
                                                 {userDetails.personalDetails.socialHandles.instagram && (

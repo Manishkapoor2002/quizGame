@@ -49,6 +49,7 @@ const Login = () => {
                 email: formData.email,
                 password: formData.password
             });
+            console.log(result.data)
             if (result && result.data.message === "Successfully loged in") {
                 setFormData({
                     email: "",

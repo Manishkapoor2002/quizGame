@@ -2,6 +2,7 @@ type SocialHandles = {
   facebook?: string;
   instagram?: string;
   linkedin?: string;
+  github?:string,
   x?: string;
   userWebsite?: string;
 };
@@ -17,7 +18,8 @@ type PersonalDetails = {
   socialHandles?: SocialHandles;
   location?: string;
   education?: Education;
-  DOB: Date;
+  DOB: Date | null;
+  Gender:"Male" | "Female"
 };
 
 type Rankings = {
