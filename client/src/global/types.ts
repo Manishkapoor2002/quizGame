@@ -10,8 +10,8 @@ type SocialHandles = {
 type Education = {
   schoolName: string;
   course: string;
-  startYear: Date;
-  finishYear: Date;
+  startYear: Date | null;
+  finishYear: Date | null;
 };
 
 type PersonalDetails = {

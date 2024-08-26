@@ -6,6 +6,7 @@ import { CurrentSetting } from "../../global/types";
 import { useNavigate } from "react-router-dom";
 import Basic from "./Basic";
 import SocialHandles from "./SocialHandles";
+import Education from "./Education.tsx";
 
 const Settings = () => {
     const navigate = useNavigate();
@@ -13,6 +14,8 @@ const Settings = () => {
     const [loading, setLoading] = useState<boolean>(true);
     const [error, setError] = useState<string | null>(null);
     const socialHandles = currentSetting?.personalDetails.socialHandles || {};
+    // const education = currentSetting?.personalDetails.education;
+    // console.log(currentSetting)
 
 
     useEffect(() => {
@@ -105,21 +108,28 @@ const Settings = () => {
                         </Grid>
                     </Grid>
                     <Container>
-                            <Basic
-                                Username={currentSetting?.username || "NA"}
-                                Gender={currentSetting?.personalDetails?.Gender || "Male"}
-                                Location={currentSetting?.personalDetails?.location || "NA"}
-                                Birthday={currentSetting?.personalDetails?.DOB || null}
-                            />
+                        <Basic
+                            Username={currentSetting?.username || "NA"}
+                            Gender={currentSetting?.personalDetails?.Gender || "Male"}
+                            Location={currentSetting?.personalDetails?.location || "NA"}
+                            Birthday={currentSetting?.personalDetails?.DOB || null}
+                        />
 
-                            <SocialHandles
-                                github={socialHandles.github || "NA"}
-                                instagram={socialHandles.instagram || "NA"}
-                                linkedin={socialHandles.linkedin || "NA"}
-                                facebook={socialHandles.facebook || "NA"}
-                                x={socialHandles.x || "NA"}
-                                userWebsite={socialHandles.userWebsite || "NA"}
-                            />
+                        <SocialHandles
+                            github={socialHandles.github || "NA"}
+                            instagram={socialHandles.instagram || "NA"}
+                            linkedin={socialHandles.linkedin || "NA"}
+                            facebook={socialHandles.facebook || "NA"}
+                            x={socialHandles.x || "NA"}
+                            userWebsite={socialHandles.userWebsite || "NA"}
+                        />
+
+                        <Education
+                            schoolName={currentSetting?.personalDetails.education?.schoolName ? currentSetting?.personalDetails.education?.schoolName : "NA"}
+                            course={currentSetting?.personalDetails.education?.course ? currentSetting?.personalDetails.education?.course : "NA"}
+                            startYear={currentSetting?.personalDetails.education?.startYear ? currentSetting?.personalDetails.education?.startYear : null}
+                            finishYear={currentSetting?.personalDetails.education?.finishYear ? currentSetting?.personalDetails.education?.finishYear : null}
+                        />
 
                     </Container>
                 </Container>

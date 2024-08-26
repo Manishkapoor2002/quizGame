@@ -102,12 +102,12 @@ const PersonDetails: React.FC<MyPersonlDetailProps> = ({ userDetails }) => {
                                             </DetailItem>
                                             {userDetails.personalDetails.education.startYear && (
                                                 <DetailItem>
-                                                    <strong>Start Year:</strong> {userDetails.personalDetails.education.startYear.toLocaleDateString()}
+                                                    <strong>Start Year:</strong> {userDetails.personalDetails.education.startYear.toString().substring(0,10)}
                                                 </DetailItem>
                                             )}
                                             {userDetails.personalDetails.education.finishYear && (
                                                 <DetailItem>
-                                                    <strong>Finish Year:</strong> {userDetails.personalDetails.education.finishYear.toLocaleDateString()}
+                                                    <strong>Finish Year:</strong> {userDetails.personalDetails.education.finishYear.toString().substring(0, 10)}
                                                 </DetailItem>
                                             )}
                                         </Box>

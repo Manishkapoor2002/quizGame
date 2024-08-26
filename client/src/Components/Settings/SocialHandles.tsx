@@ -1,6 +1,6 @@
-import { Box, Button, Container, TextField, Typography } from "@mui/material";
+import {Box, Button, Container, TextField, Typography} from "@mui/material";
 import axios from "axios";
-import { useState } from "react";
+import {useState} from "react";
 
 const colors = {
     primary: "#1E88E5",
@@ -25,13 +25,13 @@ type EditMode = {
 };
 
 const SocialHandles: React.FC<MySocialHandleInterface> = ({
-    facebook,
-    instagram,
-    linkedin,
-    github,
-    x,
-    userWebsite,
-}) => {
+                                                              facebook,
+                                                              instagram,
+                                                              linkedin,
+                                                              github,
+                                                              x,
+                                                              userWebsite,
+                                                          }) => {
     const [currentSetting, setCurrentSetting] = useState<MySocialHandleInterface>({
         facebook,
         instagram,
@@ -61,18 +61,21 @@ const SocialHandles: React.FC<MySocialHandleInterface> = ({
         const updatedValue = currentSetting[field]
         try {
             const result = await axios.post(`http://localhost:3000/setting/socialHandle`,
-            {
-                    key: [field].toString(),
-                value: updatedValue
-            },
                 {
-                    headers: { authentication: localStorage.getItem('token') || '' },
+                    key: [field].toString(),
+                    value: updatedValue
+                },
+                {
+                    headers: {authentication: localStorage.getItem('token') || ''},
                 }
             );
-
+            alert(result.data.message)
 
         } catch (err) {
-
+            if (err instanceof Error) {
+                alert(err.message as string)
+                console.log(err);
+            }
         } finally {
             setEditMode((prev) => ({
                 ...prev,
@@ -129,7 +132,7 @@ const SocialHandles: React.FC<MySocialHandleInterface> = ({
 
             {fields.map((field) => (
                 <Box key={field} mb={4}>
-                    <Typography variant="h6" color={colors.secondary} sx={{ marginBottom: "12px" }}>
+                    <Typography variant="h6" color={colors.secondary} sx={{marginBottom: "12px"}}>
                         {field.charAt(0).toUpperCase() + field.slice(1)}
                     </Typography>
                     {editMode[field] ? (
@@ -156,7 +159,7 @@ const SocialHandles: React.FC<MySocialHandleInterface> = ({
                                     },
                                 }}
                             />
-                            <Box sx={{ display: "flex", gap: "12px" }}>
+                            <Box sx={{display: "flex", gap: "12px"}}>
                                 <Button
                                     variant="contained"
                                     color="primary"
@@ -194,8 +197,8 @@ const SocialHandles: React.FC<MySocialHandleInterface> = ({
                             </Box>
                         </Box>
                     ) : (
-                        <Box sx={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-                            <Typography variant="body1" sx={{ color: colors.textSecondary, fontWeight: "500" }}>
+                        <Box sx={{display: "flex", alignItems: "center", justifyContent: "space-between"}}>
+                            <Typography variant="body1" sx={{color: colors.textSecondary, fontWeight: "500"}}>
                                 {currentSetting[field]}
                             </Typography>
                             <Button

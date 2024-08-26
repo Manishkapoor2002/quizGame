@@ -2,13 +2,16 @@ import express, { text } from "express";
 import dotenv from "dotenv";
 import authenticationJWT from "../middleware/auth.js";
 import { User } from "../db/indexDb.js";
+import { set } from "mongoose";
 
 const settingRouter = express.Router();
 
 settingRouter.get("/currentSetting", authenticationJWT, async (req, res) => {
   const { username } = req.user;
   try {
-    const currentSetting = await User.findOne({ username }).populate("personalDetails");
+    const currentSetting = await User.findOne({ username }).populate(
+      "personalDetails"
+    );
     if (!currentSetting) {
       return res.json({
         message: "Something went wrong",
@@ -17,7 +20,7 @@ settingRouter.get("/currentSetting", authenticationJWT, async (req, res) => {
 
     res.json({
       message: "current settings",
-      currentSetting
+      currentSetting,
     });
   } catch (err) {
     res.json({
@@ -87,7 +90,9 @@ settingRouter.post("/Gender", authenticationJWT, async (req, res) => {
   }
 
   try {
-    const user = await User.findOne({ username: req.user.username }).populate("personalDetails");
+    const user = await User.findOne({ username: req.user.username }).populate(
+      "personalDetails"
+    );
 
     if (!user) {
       return res.json({
@@ -118,7 +123,6 @@ settingRouter.post("/Gender", authenticationJWT, async (req, res) => {
   }
 });
 
-
 settingRouter.post("/location", authenticationJWT, async (req, res) => {
   const { location } = req.body;
 
@@ -129,7 +133,9 @@ settingRouter.post("/location", authenticationJWT, async (req, res) => {
   }
 
   try {
-    const user = await User.findOne({ username: req.user.username }).populate("personalDetails");
+    const user = await User.findOne({ username: req.user.username }).populate(
+      "personalDetails"
+    );
 
     if (!user) {
       return res.json({
@@ -202,7 +208,42 @@ settingRouter.post("/socialHandle", authenticationJWT, async (req, res) => {
   }
 });
 
+settingRouter.post("/education", authenticationJWT, async (req, res) => {
+  const { key, value } = req.body;
+  if (!key || !value) {
+    return res.json({
+      message: "Key and value are required field",
+    });
+  }
+  console.log(key,value)
 
-
+  try {
+    const user = await User.findOne({ username: req.user.username }).populate(
+      "personalDetails"
+    );
+    if (!user) {
+      return res.json({
+        message: "User not found",
+      });
+    }
+    const personalDetails = user.personalDetails;
+    if (!personalDetails) {
+      return res.json({
+        message: "personalDetails not found",
+      });
+    }
+    personalDetails.education[key] = value;
+    await personalDetails.save();
+    res.json({
+      message: "Updated successfully",
+    });
+  } catch (err) {
+    console.error("Error updating social handle:", err);
+    return res.json({
+      message: "Internal Server Error",
+      error: err.message,
+    });
+  }
+});
 
 export default settingRouter;
