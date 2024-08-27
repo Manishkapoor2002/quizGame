@@ -8,8 +8,8 @@ import React, { useState } from 'react'
 interface MyEducationInterface {
     schoolName: string;
     course: string;
-    startYear: Date | null;
-    finishYear: Date | null;
+    startYear: Dayjs | null;
+    finishYear: Dayjs | null;
 }
 
 type editMode = {
@@ -26,12 +26,11 @@ const Education: React.FC<MyEducationInterface> = ({
     finishYear
 }) => {
 
-    console.log(startYear,finishYear)
     const [currentEducation, setCurrentEducation] = useState<MyEducationInterface>({
         schoolName,
         course,
-        startYear,
-        finishYear,
+        startYear: startYear ? dayjs(startYear) : dayjs(new Date()),
+        finishYear: finishYear ? dayjs(finishYear) : dayjs(new Date()),
     })
 
     const [editMode, setEditMode] = useState<editMode>({
@@ -41,24 +40,6 @@ const Education: React.FC<MyEducationInterface> = ({
         finishYear: false,
     })
 
-    const [value, setValue] = useState<{
-        startYear: Dayjs | null,
-        finishYear: Dayjs | null
-    }>({
-        "startYear": startYear ? dayjs(startYear) : null,
-        "finishYear": finishYear ? dayjs(finishYear) : null
-    })
-    const handleDate = (field: keyof MyEducationInterface, value: Dayjs | null) => {
-        if (value) {
-            const newDate = value.toDate();
-            setCurrentEducation((prev) => ({
-                ...prev,
-                [field]: newDate
-            }))
-        }
-        console.log(field, value)
-
-    }
 
     const handleEditMode = (field: keyof MyEducationInterface) => {
         setEditMode((prev) => ({
@@ -68,7 +49,13 @@ const Education: React.FC<MyEducationInterface> = ({
     };
 
     const onhandleSave = async (field: keyof MyEducationInterface) => {
-        const updatedValue = currentEducation[field]
+        let updatedValue;
+        if ((field === "startYear" || field === "finishYear") && currentEducation[field]) {
+            updatedValue = currentEducation[field].format('YYYY-MM-DD')
+        } else {
+            updatedValue = currentEducation[field];
+        }
+        console.log(updatedValue)
         try {
             const result = await axios.post(`http://localhost:3000/setting/education`, {
                 key: [field].toString(),
@@ -109,7 +96,7 @@ const Education: React.FC<MyEducationInterface> = ({
                     textAlign: 'left',
                 }}
             >
-                Social Handles
+                Education
             </Typography>
             <Box>
                 <Box mb={3}>
@@ -249,13 +236,12 @@ const Education: React.FC<MyEducationInterface> = ({
                                 <LocalizationProvider dateAdapter={AdapterDayjs}>
                                     <DatePicker
                                         label="Controlled picker"
-                                        value={value.startYear}
+                                        value={currentEducation.startYear}
                                         onChange={(newValue) => {
-                                            setValue((prev) => ({
+                                            setCurrentEducation((prev) => ({
                                                 ...prev,
                                                 "startYear": newValue
                                             }))
-                                            handleDate("startYear", newValue)
                                         }}
                                     />
 
@@ -269,8 +255,6 @@ const Education: React.FC<MyEducationInterface> = ({
                                         color="primary"
                                         sx={{ textTransform: 'none', fontWeight: 'bold', borderRadius: '8px' }}
                                         onClick={() => {
-                                            // bug(not saving correct  date )
-                                            handleDate("startYear", value.startYear)
                                             onhandleSave("startYear")
                                         }}
                                     >
@@ -283,7 +267,7 @@ const Education: React.FC<MyEducationInterface> = ({
                                             handleEditMode("startYear");
                                             setCurrentEducation((prev) => ({
                                                 ...prev,
-                                                startYear
+                                                startYear: startYear ? dayjs(startYear) : dayjs(new Date()),
                                             }));
                                         }}
                                         sx={{ textTransform: 'none', fontWeight: 'bold', borderRadius: '8px' }}
@@ -295,7 +279,7 @@ const Education: React.FC<MyEducationInterface> = ({
                         ) : (
                             <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                                 <Typography variant="body1" sx={{ color: '#555', fontWeight: '500' }}>
-                                    {currentEducation.startYear ? currentEducation.startYear?.toString().substring(0,10) : "NA"}
+                                    {currentEducation.startYear ? currentEducation.startYear?.toString().substring(0, 11) : "NA"}
                                 </Typography>
                                 <Button
                                     variant="contained"
@@ -322,13 +306,13 @@ const Education: React.FC<MyEducationInterface> = ({
                                 <LocalizationProvider dateAdapter={AdapterDayjs}>
                                     <DatePicker
                                         label="Controlled picker"
-                                        value={value.finishYear}
+                                        value={currentEducation.finishYear}
                                         onChange={(newValue) => {
-                                            setValue((prev) => ({
+                                            setCurrentEducation((prev) => ({
                                                 ...prev,
                                                 "finishYear": newValue
                                             }))
-                                            handleDate("finishYear", newValue)
+                                            // handleDate("finishYear", newValue)
                                         }}
                                     />
 
@@ -343,7 +327,7 @@ const Education: React.FC<MyEducationInterface> = ({
                                         sx={{ textTransform: 'none', fontWeight: 'bold', borderRadius: '8px' }}
                                         onClick={() => {
                                             // bug(not saving correct  date )
-                                            handleDate("finishYear", value.finishYear)
+                                            // handleDate("finishYear", value.finishYear)
                                             onhandleSave("finishYear")
                                         }}
                                     >
@@ -356,7 +340,7 @@ const Education: React.FC<MyEducationInterface> = ({
                                             handleEditMode("finishYear");
                                             setCurrentEducation((prev) => ({
                                                 ...prev,
-                                                finishYear
+                                                finishYear: finishYear ? dayjs(finishYear) : dayjs(new Date()),
                                             }));
                                         }}
                                         sx={{ textTransform: 'none', fontWeight: 'bold', borderRadius: '8px' }}
@@ -368,7 +352,7 @@ const Education: React.FC<MyEducationInterface> = ({
                         ) : (
                             <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                                 <Typography variant="body1" sx={{ color: '#555', fontWeight: '500' }}>
-                                    {currentEducation.finishYear ? currentEducation.finishYear?.toString().substring(0,10) : "NA"}
+                                    {currentEducation.finishYear ? currentEducation.finishYear?.toString().substring(0, 11) : "NA"}
                                 </Typography>
                                 <Button
                                     variant="contained"

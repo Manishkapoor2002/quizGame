@@ -34,11 +34,34 @@ const QuizQuestions: React.FC<QuizQuestionsInterface> = ({ quizId, questions, is
     }, []);
 
 
-    const handleNoAnswer = useCallback(async () => {
+    const handleSkip = useCallback(async () => {
         setLoading(true);
         try {
             await axios.post(`http://localhost:3000/game/${isPremium ? 'addScorePremQuiz' : 'addScore'}/${quizId}`, {
                 userAnswer: 'not answered',
+            }, {
+                headers: { authentication: localStorage.getItem('token') || '' },
+            });
+
+            if (index === questions.length - 1) {
+                navigate(`/${isPremium ? 'premiumScoreboard' : 'scoreBoard'}/${quizId}`);
+            } else {
+                setIndex(prevIndex => prevIndex + 1);
+                resetTimer();
+                setSelectedOption('');
+            }
+        } catch (error) {
+            console.error('An error occurred:', error);
+        } finally {
+            setLoading(false);
+        }
+    }, [index, quizId, questions.length, navigate, resetTimer, isPremium]);
+
+    const handleNoAnswer = useCallback(async () => {
+        setLoading(true);
+        try {
+            await axios.post(`http://localhost:3000/game/${isPremium ? 'addScorePremQuiz' : 'addScore'}/${quizId}`, {
+                userAnswer: selectedOption != "" ? selectedOption : 'not answered',
             }, {
                 headers: { authentication: localStorage.getItem('token') || '' },
             });
@@ -110,7 +133,7 @@ const QuizQuestions: React.FC<QuizQuestionsInterface> = ({ quizId, questions, is
     const handleOptionChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         setSelectedOption(e.target.value);
     };
-    
+
 
     return (
         <Box sx={{ padding: 2, maxWidth: 600, margin: '40px auto' }}>
@@ -136,7 +159,15 @@ const QuizQuestions: React.FC<QuizQuestionsInterface> = ({ quizId, questions, is
                     />
                 ))}
             </RadioGroup>
-            <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
+            <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                <Button
+                    onClick={handleSkip}
+                    variant="contained"
+                    color="primary"
+                    sx={{ padding: '10px 20px', textTransform: 'none' }}
+                >
+                    {loading ? <CircularProgress size={24} color="inherit" /> : (index === questions.length - 1 ? 'Finish' : 'Skip')}
+                </Button>
                 <Button
                     onClick={handleSubmit}
                     variant="contained"
@@ -146,6 +177,7 @@ const QuizQuestions: React.FC<QuizQuestionsInterface> = ({ quizId, questions, is
                 >
                     {loading ? <CircularProgress size={24} color="inherit" /> : (index === questions.length - 1 ? 'Finish' : 'Next Question')}
                 </Button>
+              
             </Box>
         </Box>
     );

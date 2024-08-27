@@ -12,7 +12,7 @@ interface MyBasicSetting {
     Username: string;
     Gender: "Male" | "Female";
     Location: string;
-    Birthday: Date | null;
+    Birthday: Dayjs | null;
 }
 
 type editMode = {
@@ -26,7 +26,7 @@ const Basic: React.FC<MyBasicSetting> = ({ Username, Gender, Location, Birthday 
         Username,
         Gender,
         Location,
-        Birthday
+        Birthday: Birthday ? dayjs(Birthday) : dayjs(new Date())
     });
 
     const [editMode, setEditMode] = useState<editMode>({
@@ -42,8 +42,6 @@ const Basic: React.FC<MyBasicSetting> = ({ Username, Gender, Location, Birthday 
         }));
     }
 
-    const [value, setValue] = useState<Dayjs | null>(Birthday ? dayjs(Birthday) : null);
-
 
     const onhandleEditDetail = (value: string) => {
         setCurrentBasicSetting((prev) => ({
@@ -52,16 +50,7 @@ const Basic: React.FC<MyBasicSetting> = ({ Username, Gender, Location, Birthday 
         }));
     }
 
-    const onhandleEditDOB = (value : Dayjs | null) => {
-        if (value) {
-            const newDate = value.toDate()
-            setCurrentBasicSetting((prev) => ({
-                ...prev,
-                "Birthday": newDate
-            }))
-        }
-        console.log("new date : ", currentBasicSetting.Birthday)
-    }
+
 
     const onGenderChange = (value: "Male" | "Female") => {
         setCurrentBasicSetting((prev) => ({
@@ -71,7 +60,13 @@ const Basic: React.FC<MyBasicSetting> = ({ Username, Gender, Location, Birthday 
     }
     const onClickSave = async (field: "Gender" | "Location" | "Birthday") => {
         try {
-            const updatedValue = currentBasicSetting[field];
+            let updatedValue;
+            if (field === "Birthday" && currentBasicSetting["Birthday"]) {
+                updatedValue = currentBasicSetting["Birthday"].format('YYYY-MM-DD')
+            } else {
+                updatedValue = currentBasicSetting[field];
+            }
+
             const map = {
                 "Gender": "Gender",
                 "Birthday": "DOB",
@@ -79,8 +74,11 @@ const Basic: React.FC<MyBasicSetting> = ({ Username, Gender, Location, Birthday 
             };
 
 
-            const result = await axios.post(`http://localhost:3000/setting/${map[field]}`,
-                { [map[field]]: updatedValue },
+            const result = await axios.post(`http://localhost:3000/setting/basic`,
+                {
+                    key: [map[field]].toString(),
+                    value: updatedValue
+                },
                 {
                     headers: { authentication: localStorage.getItem('token') || '' },
                 }
@@ -290,10 +288,12 @@ const Basic: React.FC<MyBasicSetting> = ({ Username, Gender, Location, Birthday 
                                 <LocalizationProvider dateAdapter={AdapterDayjs}>
                                     <DatePicker
                                         label="Controlled picker"
-                                        value={value}
+                                        value={currentBasicSetting.Birthday}
                                         onChange={(newValue) => {
-                                            setValue(newValue)
-                                            onhandleEditDOB(newValue)
+                                            setCurrentBasicSetting((prev) => ({
+                                                ...prev,
+                                                "Birthday": newValue
+                                            }))
                                         }}
                                     />
 
@@ -307,9 +307,8 @@ const Basic: React.FC<MyBasicSetting> = ({ Username, Gender, Location, Birthday 
                                         color="primary"
                                         sx={{ textTransform: 'none', fontWeight: 'bold', borderRadius: '8px' }}
                                         onClick={() => {
-                                            // bug(not saving correct birthday date )
-                                            onhandleEditDOB(value)
-                                            // onClickSave("Birthday")
+                                            onClickSave("Birthday")
+                                            //   alert("dsjchsd")
                                         }}
                                     >
                                         Save
@@ -333,7 +332,7 @@ const Basic: React.FC<MyBasicSetting> = ({ Username, Gender, Location, Birthday 
                         ) : (
                             <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                                 <Typography variant="body1" sx={{ color: '#555', fontWeight: '500' }}>
-                                    {currentBasicSetting.Birthday ? currentBasicSetting.Birthday?.toString() : "NA"}
+                                    {currentBasicSetting.Birthday ? currentBasicSetting.Birthday?.toString().substring(0,11) : "NA"}
                                 </Typography>
                                 <Button
                                     variant="contained"

@@ -14,10 +14,6 @@ const Settings = () => {
     const [loading, setLoading] = useState<boolean>(true);
     const [error, setError] = useState<string | null>(null);
     const socialHandles = currentSetting?.personalDetails.socialHandles || {};
-    // const education = currentSetting?.personalDetails.education;
-    // console.log(currentSetting)
-
-
     useEffect(() => {
         setLoading(true);
         const getCurrentSetting = async () => {
@@ -110,6 +106,7 @@ const Settings = () => {
                     <Container>
                         <Basic
                             Username={currentSetting?.username || "NA"}
+                            Email = {currentSetting?.email || "NA"}
                             Gender={currentSetting?.personalDetails?.Gender || "Male"}
                             Location={currentSetting?.personalDetails?.location || "NA"}
                             Birthday={currentSetting?.personalDetails?.DOB || null}

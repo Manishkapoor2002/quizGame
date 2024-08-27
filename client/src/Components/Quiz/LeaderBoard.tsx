@@ -16,7 +16,6 @@ import {
     Avatar,
 } from "@mui/material";
 import { useNavigate } from "react-router-dom";
-import { userState } from "../../store/userAtom";
 
 const styles = {
     tableContainer: {

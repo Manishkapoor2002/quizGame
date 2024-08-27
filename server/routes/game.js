@@ -97,8 +97,8 @@ gameRoute.post("/startNormalQuiz", authenticationJWT, async (req, res) => {
 // start premuim quiz:
 gameRoute.post("/startPremiumQuiz", authenticationJWT, async (req, res) => {
   const { difficultyLevel, category } = req.body;
-  
 
+  
   if (!difficultyLevel || !category) {
     return res.json({
       message: "difficultyLevel,category are mandatory fields",
@@ -231,8 +231,12 @@ gameRoute.post("/addScore/:quizId", authenticationJWT, async (req, res) => {
         message: "There is only 10 questions in Quiz",
       });
     }
-    const isCorrectAnswer = quiz.answers[index] === userAnswer;
-    const score = isCorrectAnswer ? perQuesMark : (-1 * perQuesMark) / 4;
+    let score = 0;
+    if (userAnswer != "not answered") {
+      const isCorrectAnswer = quiz.answers[index] === userAnswer;
+      score = isCorrectAnswer ? perQuesMark : (-1 * perQuesMark) / 4;
+    }
+
     quiz.mark.push(score);
     quiz.userSolution.push(userAnswer);
     await quiz.save();
@@ -326,8 +330,11 @@ gameRoute.post(
           message: "There is only 10 questions in Quiz",
         });
       }
-      const isCorrectAnswer = quiz.answers[index] === userAnswer;
-      const score = isCorrectAnswer ? perQuesMark : (-1 * perQuesMark) / 4;
+      let score = 0;
+      if (userAnswer != "not answered") {
+        const isCorrectAnswer = quiz.answers[index] === userAnswer;
+        score = isCorrectAnswer ? perQuesMark : (-1 * perQuesMark) / 4;
+      }
       quiz.mark.push(score);
       quiz.userSolution.push(userAnswer);
       await quiz.save();

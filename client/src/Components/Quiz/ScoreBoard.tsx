@@ -5,31 +5,39 @@ import { QuizStruct } from '../../global/types';
 import { Box, Chip, Grid, Typography, Paper } from '@mui/material';
 
 const containerStyle = {
-  padding: '20px',
-  maxWidth: '1200px',
-  margin: '150px auto',
+  padding: '40px',
+  maxWidth: '1000px',
+  margin: '100px auto',
+  backgroundColor: '#f9f9f9',
 };
 
 const sectionStyle = {
-  marginBottom: '20px',
+  marginBottom: '24px',
 };
 
 const questionBlockStyle = {
-  borderBottom: '1px solid #e0e0e0',
-  paddingBottom: '16px',
-  marginBottom: '16px',
+  borderBottom: '1px solid #ddd',
+  paddingBottom: '20px',
+  marginBottom: '20px',
+  padding: '20px',
+  borderRadius: '8px',
+  backgroundColor: '#ffffff',
 };
 
-const optionItemStyle = {
-  padding: '8px 16px',
-  margin: '4px 0',
-  borderRadius: '8px',
-  border: '1px solid #e0e0e0',
+const optionItemStyle = (isCorrect: boolean, isUserAnswer: boolean) => ({
+  padding: '10px 16px',
+  margin: '6px 0',
+  borderRadius: '6px',
+  border: '1px solid #ddd',
   transition: 'all 0.3s ease',
-  '&:hover': {
-    backgroundColor: '#f5f5f5',
-  },
-};
+  backgroundColor: isUserAnswer
+    ? isCorrect
+      ? '#d4edda' // Light green for correct answer
+      : '#f8d7da' // Light red for wrong answer
+    : '#f4f4f4', // Default background for options
+  fontWeight: isUserAnswer ? 'bold' : 'normal',
+  color: isUserAnswer ? (isCorrect ? 'green' : 'red') : 'inherit',
+});
 
 const ScoreBoard = () => {
   const { quizId } = useParams<{ quizId: string }>();
@@ -81,53 +89,56 @@ const ScoreBoard = () => {
     };
   };
   const { totalQuestions, correctAnswers, totalMarks } = calculateStatistics();
-
   return (
     <Box sx={containerStyle}>
       {quizDetail ? (
         <>
-          <Paper elevation={3} sx={{ p: 3, mb: 4 }}>
-            <Typography variant="h4" gutterBottom>
+          <Paper elevation={4} sx={{ p: 4, mb: 6, backgroundColor: '#ffffff', borderRadius: '12px' }}>
+            <Typography variant="h4" gutterBottom sx={{ fontWeight: 'bold' }}>
               Quiz Results
             </Typography>
             <Grid container justifyContent="space-between" alignItems="center" sx={sectionStyle}>
-              <Typography variant="h5">
+              <Typography variant="h6" sx={{ fontWeight: 500 }}>
                 Category: {quizDetail.category}
               </Typography>
-              <Chip label={quizDetail.difficultyLevel} color="primary" />
+              <Chip label={quizDetail.difficultyLevel} color="secondary" sx={{ fontWeight: 'bold' }} />
             </Grid>
-            <Typography variant="body1" sx={sectionStyle}>
+            <Typography variant="body1" sx={{ ...sectionStyle, fontWeight: 500 }}>
               <strong>Total Questions:</strong> {totalQuestions}
             </Typography>
-            <Typography variant="body1" sx={sectionStyle}>
+            <Typography variant="body1" sx={{ ...sectionStyle, fontWeight: 500 }}>
               <strong>Correct Answers:</strong> {correctAnswers}
             </Typography>
-            <Typography variant="body1" sx={sectionStyle}>
+            <Typography variant="body1" sx={{ ...sectionStyle, fontWeight: 500 }}>
               <strong>Total Marks:</strong> {totalMarks.toFixed(2)}
             </Typography>
-            <Typography variant="body1" sx={sectionStyle}>
+            <Typography variant="body1" sx={{ ...sectionStyle, fontWeight: 500 }}>
               <strong>Practice Game:</strong> {quizDetail.practiceGame ? 'Yes' : 'No'}
             </Typography>
           </Paper>
           {quizDetail.questions.map((q, questionIndex) => (
-            <Paper key={questionIndex} elevation={1} sx={questionBlockStyle}>
-              <Typography variant="h6">
+            <Paper key={questionIndex} elevation={2} sx={questionBlockStyle}>
+              <Typography variant="h6" sx={{ fontWeight: 'bold', mb: 2 }}>
                 {questionIndex + 1}. {q.question}
               </Typography>
               <ul className="options-list" style={{ listStyleType: 'none', paddingLeft: 0 }}>
-                {q.options.map((option, optionIndex) => (
-                  <li key={optionIndex} style={optionItemStyle}>
-                    {option}
-                  </li>
-                ))}
+                {q.options.map((option, optionIndex) => {
+                  const isUserAnswer = quizDetail.userSolution[questionIndex] === option;
+                  const isCorrect = quizDetail.answers[questionIndex] === option;
+                  return (
+                    <li key={optionIndex} style={optionItemStyle(isCorrect, isUserAnswer)}>
+                      {option}
+                    </li>
+                  );
+                })}
               </ul>
-              <Typography color="primary">
+              <Typography color="textSecondary" sx={{ mt: 2, fontWeight: 500 }}>
                 <strong>Your Answer:</strong> {quizDetail.userSolution[questionIndex] || "Not answered"}
               </Typography>
-              <Typography color="secondary">
+              <Typography color="secondary" sx={{ mt: 1, fontWeight: 500 }}>
                 <strong>Correct Answer:</strong> {quizDetail.answers[questionIndex]}
               </Typography>
-              <Typography variant="body2" color="textSecondary">
+              <Typography variant="body2" color="textSecondary" sx={{ mt: 1 }}>
                 <strong>Marks:</strong> {quizDetail.mark[questionIndex]}
               </Typography>
             </Paper>
