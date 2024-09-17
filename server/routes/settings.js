@@ -123,7 +123,6 @@ settingRouter.post("/education", authenticationJWT, async (req, res) => {
       message: "Key and value are required field",
     });
   }
-  console.log(key, value);
 
   try {
     const user = await User.findOne({ username: req.user.username }).populate(

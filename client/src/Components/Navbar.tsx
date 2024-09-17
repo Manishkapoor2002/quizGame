@@ -52,7 +52,8 @@ const Navbar = () => {
             userId: result.data.userId,
             profilePicture: result.data.profilePicture,
             username: result.data.username,
-            isPremiumUser: result.data.isPremiumUser
+            isPremiumUser: result.data.isPremiumUser,
+            email:result.data.email
           });
         } else {
           setAuth(false);
@@ -77,7 +78,7 @@ const Navbar = () => {
 
   const renderMenuItems = () => (
     <>
-      {["Home", "Start Quiz", "Premium"].map((text) => (
+      {["Home", "Premium"].map((text) => (
         <Typography
           key={text}
           component="h6"
@@ -128,7 +129,7 @@ const Navbar = () => {
                 borderRadius: "8px",
                 transition: "background 0.3s ease",
               }}
-              onClick={() => navigate("/")}
+              onClick={() => navigate("/home")}
             >
               MindMingle
             </Typography>

@@ -169,7 +169,7 @@ const SocialHandles: React.FC<MySocialHandleInterface> = ({
                                         borderRadius: "8px",
                                         backgroundColor: colors.primary,
                                         "&:hover": {
-                                            backgroundColor: `${colors.primary}BF`, // Slightly transparent on hover
+                                            backgroundColor: `${colors.primary}BF`, 
                                         },
                                     }}
                                     onClick={() => handleSave(field)}

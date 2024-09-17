@@ -141,7 +141,7 @@ gameRoute.post("/startPremiumQuiz", authenticationJWT, async (req, res) => {
       userId: user._id,
       questions: questionsObj.AllQuestions,
       answers: questionsObj.CorrectSolutions,
-      answerDescription: questionsObj.detailedExplaination,
+      answerDescription: questionsObj.detailedExplanation,
       mark: [],
       difficultyLevel,
       category,

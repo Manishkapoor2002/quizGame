@@ -1,3 +1,5 @@
+import { Dayjs } from "dayjs";
+
 type SocialHandles = {
   facebook?: string;
   instagram?: string;
@@ -10,15 +12,15 @@ type SocialHandles = {
 type Education = {
   schoolName: string;
   course: string;
-  startYear: Date | null;
-  finishYear: Date | null;
+  startYear: Dayjs | null;
+  finishYear: Dayjs | null;
 };
 
 type PersonalDetails = {
   socialHandles?: SocialHandles;
   location?: string;
   education?: Education;
-  DOB: Date | null;
+  DOB: Dayjs | null;
   Gender:"Male" | "Female"
 };
 
@@ -105,6 +107,7 @@ type userStateType = {
   userId: string;
   profilePicture: string;
   username: string;
+  email:string,
   isPremiumUser: boolean;
 };
 

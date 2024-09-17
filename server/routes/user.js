@@ -13,6 +13,7 @@ import {
 } from "../db/indexDb.js";
 import authenticationJWT from "../middleware/auth.js";
 import multer from "multer";
+import Stripe from 'stripe';
 
 const upload = multer();
 dotenv.config();
@@ -23,6 +24,7 @@ const SecurityKey = process.env.SecurityKey;
 const CloudinaryApiKey = process.env.CLOUDINARY_API_KEY;
 const CloudinarySecretKey = process.env.CLOUDINARY_SECRET_KEY;
 const cloudName = process.env.CLOUDINARY_NAME;
+const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
 
 cloudinary.config({
   cloud_name: cloudName,
@@ -46,7 +48,6 @@ userRoute.post("/imageUrlGen", upload.single("image"), async (req, res) => {
         })
         .end(imgData);
     });
-
     res.json({ message: "File uploaded successfully", imageUrl: response.url });
   } catch (err) {
     console.error("Error uploading image:", err);
@@ -64,7 +65,8 @@ userRoute.get("/me", authenticationJWT, async (req, res) => {
       userId: req.user.userId,
       profilePicture: req.user.profilePicture,
       isPremiumUser: user.premiumUser,
-    });
+      email:user.email
+  });
   } catch (err) {
     res.json({
       message: "Something went wrong",
@@ -121,7 +123,7 @@ userRoute.post("/signup", async (req, res) => {
       email,
       profilePicture,
       phoneNumber,
-      premiumUser: false,
+      premiumUser: true, //everyone is premium user unitl the next update
       rankings: newUserRank._id,
       personalDetails: newPersonalDetail._id,
     });
@@ -268,44 +270,44 @@ userRoute.get("/profile/:username", async (req, res) => {
   });
 });
 
-userRoute.post("/purchasePremuim", authenticationJWT, async (req, res) => {
-  const username = req.user.username;
-  try {
-    const user = await User.findOne({ username });
-    if (!user) {
-      return res.json({
-        message: "User not found",
-      });
-    }
-    const check = await PremuimQuizSummary.findOne({ userId: user._id });
+// userRoute.post("/purchasePremuim", authenticationJWT, async (req, res) => {
+//   const username = req.user.username;
+//   try {
+//     const user = await User.findOne({ username });
+//     if (!user) {
+//       return res.json({
+//         message: "User not found",
+//       });
+//     }
+//     const check = await PremuimQuizSummary.findOne({ userId: user._id });
 
-    const currTime = new Date();
-    let time = currTime.getTime();
+//     const currTime = new Date();
+//     let time = currTime.getTime();
 
-    let newSubExpireTime =
-      Math.max(time, user.subscriptionExpireTime) + 30 * 24 * 60 * 60 * 1000;
+//     let newSubExpireTime =
+//       Math.max(time, user.subscriptionExpireTime) + 30 * 24 * 60 * 60 * 1000;
 
-    user.subscriptionExpireTime = newSubExpireTime;
-    user.premiumUser = true;
+//     user.subscriptionExpireTime = newSubExpireTime;
+//     user.premiumUser = true;
 
-    await user.save();
-    if (!check) {
-      const newPremiumSummary = new PremuimQuizSummary({
-        userId: user._id,
-      });
-      await newPremiumSummary.save();
-    }
+//     await user.save();
+//     if (!check) {
+//       const newPremiumSummary = new PremuimQuizSummary({
+//         userId: user._id,
+//       });
+//       await newPremiumSummary.save();
+//     }
 
-    res.json({
-      message: "Successfully purchased premuim",
-    });
-  } catch (err) {
-    res.json({
-      message: "Something went wrong",
-      errorType: err.message,
-    });
-  }
-});
+//     res.json({
+//       message: "Successfully purchased premuim",
+//     });
+//   } catch (err) {
+//     res.json({
+//       message: "Something went wrong",
+//       errorType: err.message,
+//     });
+//   }
+// });
 
 userRoute.get("/getQuizzesSummary/:userId", async (req, res) => {
   const { userId } = req.params;
@@ -343,4 +345,43 @@ userRoute.get("/getQuizzesSummary/:userId", async (req, res) => {
     });
   }
 });
+
+// for future updates:
+// userRoute.post('/purchasePremium',authenticationJWT,async(req,res)=>{
+//   const {planType ,email} = req.body;
+//   const cost = planType === "monthly" ? 59.99 : 599.99;
+//   try {
+//     const product = await stripe.products.create({
+//         name: planType.charAt(0).toUpperCase() + planType.substring(1) + " Premium Plan",
+//     });
+
+//     const price = await stripe.prices.create({
+//         product: product.id,
+//         unit_amount: cost * 100, 
+//         currency: 'inr',
+//     });
+
+//     const session = await stripe.checkout.sessions.create({
+//         line_items: [
+//             {
+//                 price: price.id,
+//                 quantity: 1,
+//             }
+//         ],
+//         mode: 'payment',
+//         success_url: 'success',
+//         cancel_url: 'cancel',
+//         customer_email: email,
+//     });
+
+//     res.json({ 
+//       message : "product created",
+//       url: session.url 
+//     });
+// } catch (error) {
+//     console.error('Error creating payment session:', error);
+//     res.json({ error: 'Internal Server Error' });
+// }
+// });
+
 export default userRoute;

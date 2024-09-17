@@ -1,4 +1,4 @@
-import { Container, Grid, Typography, Box, Card, CardContent, Avatar, Link, IconButton } from "@mui/material";
+import { Container, Grid, Typography, Box, Card, CardContent, Avatar, IconButton } from "@mui/material";
 import { styled } from "@mui/system";
 import SettingsIcon from '@mui/icons-material/Settings';
 import { UserData } from "../../global/types";
@@ -48,6 +48,11 @@ const PersonDetails: React.FC<MyPersonlDetailProps> = ({ userDetails }) => {
     const navigate = useNavigate();
     const currentUserId = localStorage.getItem("userId");
 
+    const HandleSocial = (url: string): void => {
+        window.open(url, '*')
+        return;
+    }
+
     return (
         <Container maxWidth="xl" sx={{ marginTop: '100px' }}>
             <UserDetailsCard>
@@ -89,7 +94,7 @@ const PersonDetails: React.FC<MyPersonlDetailProps> = ({ userDetails }) => {
                                     )}
 
                                     {userDetails.personalDetails?.DOB && (
-                                        <DetailItem><strong>DOB:</strong> {userDetails.personalDetails.DOB.toString().substring(0,10)}</DetailItem>
+                                        <DetailItem><strong>DOB:</strong> {userDetails.personalDetails.DOB.toString().substring(0, 10)}</DetailItem>
                                     )}
 
                                     {userDetails.personalDetails?.education && (userDetails.personalDetails.education.schoolName != "" || userDetails.personalDetails.education.course != "" || userDetails.personalDetails.education.startYear || userDetails.personalDetails.education.finishYear) && (
@@ -102,7 +107,7 @@ const PersonDetails: React.FC<MyPersonlDetailProps> = ({ userDetails }) => {
                                             </DetailItem>
                                             {userDetails.personalDetails.education.startYear && (
                                                 <DetailItem>
-                                                    <strong>Start Year:</strong> {userDetails.personalDetails.education.startYear.toString().substring(0,10)}
+                                                    <strong>Start Year:</strong> {userDetails.personalDetails.education.startYear.toString().substring(0, 10)}
                                                 </DetailItem>
                                             )}
                                             {userDetails.personalDetails.education.finishYear && (
@@ -123,34 +128,34 @@ const PersonDetails: React.FC<MyPersonlDetailProps> = ({ userDetails }) => {
                                             </DetailItem>
                                             <Box display="flex" flexDirection="column" gap={1}>
                                                 {userDetails.personalDetails.socialHandles.facebook && (
-                                                    <Link href={userDetails.personalDetails.socialHandles.facebook} target="_blank" rel="noopener">
+                                                    <span onClick={() => HandleSocial(userDetails.personalDetails?.socialHandles?.facebook || "")}>
                                                         Facebook
-                                                    </Link>
+                                                    </span>
                                                 )}
-                                                 {userDetails.personalDetails.socialHandles.github && (
-                                                    <Link href={userDetails.personalDetails.socialHandles.github} target="_blank" rel="noopener">
-                                                        Github
-                                                    </Link>
+                                                {userDetails.personalDetails.socialHandles.github && (
+                                                      <span onClick={() => HandleSocial(userDetails.personalDetails?.socialHandles?.github || "")}>
+                                                      Github
+                                                  </span>
                                                 )}
                                                 {userDetails.personalDetails.socialHandles.instagram && (
-                                                    <Link href={userDetails.personalDetails.socialHandles.instagram} target="_blank" rel="noopener">
+                                                      <span onClick={() => HandleSocial(userDetails.personalDetails?.socialHandles?.instagram || "")}>
                                                         Instagram
-                                                    </Link>
+                                                    </span>
                                                 )}
                                                 {userDetails.personalDetails.socialHandles.linkedin && (
-                                                    <Link href={userDetails.personalDetails.socialHandles.linkedin} target="_blank" rel="noopener">
+                                                    <a href={userDetails.personalDetails.socialHandles.linkedin} target="_blank" rel="noopener">
                                                         LinkedIn
-                                                    </Link>
+                                                    </a>
                                                 )}
                                                 {userDetails.personalDetails.socialHandles.x && (
-                                                    <Link href={userDetails.personalDetails.socialHandles.x} target="_blank" rel="noopener">
+                                                    <a href={userDetails.personalDetails.socialHandles.x} target="_blank" rel="noopener">
                                                         X (formerly Twitter)
-                                                    </Link>
+                                                    </a>
                                                 )}
                                                 {userDetails.personalDetails.socialHandles.userWebsite && (
-                                                    <Link href={userDetails.personalDetails.socialHandles.userWebsite} target="_blank" rel="noopener">
+                                                    <a href={userDetails.personalDetails.socialHandles.userWebsite} target="_blank" rel="noopener">
                                                         Website
-                                                    </Link>
+                                                    </a>
                                                 )}
                                             </Box>
                                         </Box>

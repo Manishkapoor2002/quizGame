@@ -96,6 +96,7 @@ const PremiumQuiz: React.FC<QuizDetailsProps> = ({ currentUserId }) => {
                     `http://localhost:3000/game/getAllPremiumQuizzes/${currentUserId}/${page}`
                 );
                 if (result.data.message === "Quizzes fetched successfully") {
+                    console.log(result.data.allQuizzes)
                     setAllPremiumQuizzes(result.data.allQuizzes);
                     if (result.data.allQuizzes.length < 10) setIsLastPage(true);
                     else setIsLastPage(false);
