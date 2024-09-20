@@ -21,15 +21,15 @@ dotenv.config();
 const userRoute = express.Router();
 const saltValue = parseInt(process.env.SALT_VALUE);
 const SecurityKey = process.env.SecurityKey;
-const CloudinaryApiKey = process.env.CLOUDINARY_API_KEY;
-const CloudinarySecretKey = process.env.CLOUDINARY_SECRET_KEY;
+const CloudinaryApiKey = process.env.CLOUDINARY_API_KEY
+const CloudinarySecretKey = process.env.CLOUDINARY_SECRET_KEY
 const cloudName = process.env.CLOUDINARY_NAME;
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
+
 
 cloudinary.config({
-  cloud_name: cloudName,
-  api_key: CloudinaryApiKey,
-  api_secret: CloudinarySecretKey,
+    cloud_name: cloudName,
+    api_key: CloudinaryApiKey,
+    api_secret: CloudinarySecretKey
 });
 
 // get cloudinary photo link route:
@@ -55,6 +55,28 @@ userRoute.post("/imageUrlGen", upload.single("image"), async (req, res) => {
   }
 });
 
+userRoute.post("/updateDp",authenticationJWT,async(req,res)=>{
+  const {_id,url} = req.body;
+  try{
+    const result = await User.findByIdAndUpdate(_id,{profilePicture:url},{ new: true });
+    if(result){
+      res.json({
+        message:"Successfully uploaded"
+      })
+      return;
+    }
+    res.json({
+      message:"Something went wrong"
+    })
+  }catch(err){
+    res.json({
+      message:"Something went wrong",
+      errorType:err
+    })
+  }
+  
+})
+
 // about me:
 userRoute.get("/me", authenticationJWT, async (req, res) => {
   try {
@@ -69,7 +91,7 @@ userRoute.get("/me", authenticationJWT, async (req, res) => {
   });
   } catch (err) {
     res.json({
-      message: "Something went wrong",
+    message: "Something went wrong",
       errorType: err.message,
     });
   }
