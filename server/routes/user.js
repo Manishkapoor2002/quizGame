@@ -145,7 +145,7 @@ userRoute.post("/signup", async (req, res) => {
       email,
       profilePicture,
       phoneNumber,
-      premiumUser: true, //everyone is premium user unitl the next update
+      premiumUser: false, 
       rankings: newUserRank._id,
       personalDetails: newPersonalDetail._id,
     });
@@ -292,44 +292,79 @@ userRoute.get("/profile/:username", async (req, res) => {
   });
 });
 
-// userRoute.post("/purchasePremuim", authenticationJWT, async (req, res) => {
-//   const username = req.user.username;
-//   try {
-//     const user = await User.findOne({ username });
-//     if (!user) {
-//       return res.json({
-//         message: "User not found",
-//       });
-//     }
-//     const check = await PremuimQuizSummary.findOne({ userId: user._id });
+userRoute.post("/purchasePremuim", authenticationJWT, async (req, res) => {
+  const username = req.user.username;
+  try {
+    const user = await User.findOne({ username });
+    if (!user) {
+      return res.json({
+        message: "User not found",
+      });
+    }
+    const check = await PremuimQuizSummary.findOne({ userId: user._id });
 
-//     const currTime = new Date();
-//     let time = currTime.getTime();
+    const currTime = new Date();
+    let time = currTime.getTime();
 
-//     let newSubExpireTime =
-//       Math.max(time, user.subscriptionExpireTime) + 30 * 24 * 60 * 60 * 1000;
+    let newSubExpireTime =
+      Math.max(time, user.subscriptionExpireTime) + 30 * 24 * 60 * 60 * 1000;
 
-//     user.subscriptionExpireTime = newSubExpireTime;
-//     user.premiumUser = true;
+    user.subscriptionExpireTime = newSubExpireTime;
+    user.premiumUser = true;
 
-//     await user.save();
-//     if (!check) {
-//       const newPremiumSummary = new PremuimQuizSummary({
-//         userId: user._id,
-//       });
-//       await newPremiumSummary.save();
-//     }
+    await user.save();
+    if (!check) {
+      const newPremiumSummary = new PremuimQuizSummary({
+        userId: user._id,
+      });
+      await newPremiumSummary.save();
+    }
 
-//     res.json({
-//       message: "Successfully purchased premuim",
-//     });
-//   } catch (err) {
-//     res.json({
-//       message: "Something went wrong",
-//       errorType: err.message,
-//     });
-//   }
-// });
+    res.json({
+      message: "Successfully purchased premuim",
+    });
+  } catch (err) {
+    res.json({
+      message: "Something went wrong",
+      errorType: err.message,
+    });
+  }
+});
+
+userRoute.post("/cancelPurchase",authenticationJWT,async (req,res)=>{
+  const username = req.user.username;
+
+  try {
+    const user = await User.findOne({username})
+    if(!user){
+      res.json({
+        message:"User not found"
+      })
+      return;
+    }
+    const currTime = new Date();
+    let time = currTime.getTime();
+    const premiumUser = user.subscriptionExpireTime > time;
+    await User.findByIdAndUpdate(user._id,{premiumUser:false,subscriptionExpireTime : time},{new : true});
+  
+    if(!premiumUser){
+      res.json({
+        message:"Not a Premium User",
+      })
+      return;
+    }
+    res.json({
+      message:"Cancel Purchase Successfully"
+    })
+  }catch(err){
+    re.json({
+      message:"Something went wrong",
+      errorType:err.message
+    })
+  }
+  
+})
+
 
 userRoute.get("/getQuizzesSummary/:userId", async (req, res) => {
   const { userId } = req.params;
@@ -367,6 +402,7 @@ userRoute.get("/getQuizzesSummary/:userId", async (req, res) => {
     });
   }
 });
+
 
 // for future updates:
 // userRoute.post('/purchasePremium',authenticationJWT,async(req,res)=>{

@@ -247,6 +247,22 @@ const Navbar = () => {
                   >
                     {renderMenuItems()}
                     <Divider />
+                    <div onClick={() => {
+                    navigate(`/profile/${currentUserState?.username}`)
+                  }} style={{
+                    display:'flex',
+                    justifyContent:'center',
+                    alignContent:'center',
+                    alignItems:'center',
+                   marginRight:'20%'
+                  }}>
+                    <img
+                      src={currentUserState?.profilePicture}
+                      alt="Profile Picture"
+                      style={{ borderRadius: "50%", width: "40px", height: "40px", cursor: "pointer" }}
+                    />
+                  </div>
+                  <Divider />
                     {auth ? (
                       <MenuItem>
                         <Button

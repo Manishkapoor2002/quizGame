@@ -4,11 +4,13 @@ import { styled } from '@mui/material/styles';
 import OpenInNewOutlinedIcon from '@mui/icons-material/OpenInNewOutlined';
 import CloudUploadIcon from '@mui/icons-material/CloudUpload';
 import { useEffect, useState } from "react";
-import { CurrentSetting } from "../../global/types";
+import { CurrentSetting, userStateType } from "../../global/types";
 import { useNavigate } from "react-router-dom";
 import Basic from "./Basic";
 import SocialHandles from "./SocialHandles";
 import Education from "./Education.tsx";
+import { useSetRecoilState } from "recoil";
+import { userState } from "../../store/userAtom.ts";
 
 const VisuallyHiddenInput = styled('input')({
     clip: 'rect(0 0 0 0)',
@@ -24,60 +26,89 @@ const VisuallyHiddenInput = styled('input')({
 
 const Settings = () => {
     const navigate = useNavigate();
+    const currentUserAtom = useSetRecoilState<userStateType | null>(userState);
     const [currentSetting, setCurrentSetting] = useState<CurrentSetting | null>(null);
     const [loading, setLoading] = useState<boolean>(true);
+    const [imageLoading, setImageLoading] = useState<boolean>(false);
     const [error, setError] = useState<string | null>(null);
     const socialHandles = currentSetting?.personalDetails.socialHandles || {};
     const [image, setImage] = useState<File | null>(null)
-    const [flagUpload, setFloagUpload] = useState<boolean>(false);
 
-    const handlePostUpload = async () => {
 
-        if (!image) {
-            alert("Select photo")
-            return;
-        }
-        setLoading(true);
-        const formData = new FormData();
-        formData.append("image", image);
-        let URL = "";
+    const uploadToDb = async () => {
+        setImageLoading(true);
+       const url : string | null =  await handlePostUpload();
+        console.log(url)
+        if(url === null && url === "") return ;
 
         try {
-            const result = await axios.post("http://localhost:3030/user/imageUrlGen", formData, {
-                headers: {
-                    'Content-Type': 'multipart/form-data'
-                }
-            });
-
-            if (result.data.message === 'File uploaded successfully') {
-                URL = result.data.imageUrl;
-                console.log(URL)
-            } else {
-                console.log("something went wrong!")
-                return;
-            }
-        } catch (err) {
-            console.log(err)
-        }
-
-        try {
-            const result = await axios.post("http://localhost:3030/post/upload", {
-                "imageURL": URL,
+            const result = await axios.post("http://localhost:3000/user/updateDp", {
+                "url": url,
+                _id:currentSetting?._id
             }, {
                 headers: {
                     'authentication': localStorage.getItem("token")
                 }
             });
 
+            if (result.data.message === "Successfully uploaded") {
+            setImageLoading(false);
 
+                setCurrentSetting((curr: CurrentSetting | null) => 
+                  curr ? { 
+                    ...curr, 
+                    profilePicture: url? url : ""  
+                  } : null
+                );
+
+                currentUserAtom((curr : userStateType | null)=>(
+                    curr ? {
+                    ...curr,
+                    profilePicture:url?url:"",
+                    }: null 
+                  ));
+              }
+           
+            setImageLoading(false);
         } catch (err) {
-            setLoading(false);
+            setImageLoading(false);
             console.log(err);
         }
     }
-    if (flagUpload) {
-        handlePostUpload();
+
+    const handlePostUpload = async () : Promise<string | null> => {
+
+        if (!image) {
+            alert("Select photo")
+            return null;
+        }
+        const formData = new FormData();
+        formData.append("image", image);
+
+        try {
+            const result = await axios.post("http://localhost:3000/user/imageUrlGen", formData, {
+                headers: {
+                    'Content-Type': 'multipart/form-data'
+                }
+            });
+
+            console.log(result);
+
+
+            if (result.data.message === 'File uploaded successfully') {
+                return result.data.imageUrl;
+            } else {
+                console.log("something went wrong!")
+            return null;
+            }
+        } catch (err) {
+            console.log(err)
+            return null;
+        }
+
+
     }
+
 
     useEffect(() => {
         setLoading(true);
@@ -149,6 +180,7 @@ const Settings = () => {
                                 alt="Profile Picture"
                                 style={{ width: '120px', height: '120px', borderRadius: '50%', objectFit: 'cover' }}
                             />
+                            
 
                             <Button
                                 component="label"
@@ -168,6 +200,20 @@ const Settings = () => {
                                     }}
                                 />
                             </Button>
+
+                            {image && (
+                                <Button
+                                component="label"
+                                variant="outlined"
+                                size="small"
+                                style={{ marginBottom: '20px' }}
+                                disabled={imageLoading}
+                                onClick={uploadToDb}
+                            >
+                                {imageLoading ? "Uploading Pic" : "Update DP"}
+                            </Button>
+                            )
+                            }
 
                         </Grid>
                         <Grid item xs={12} md={8} sx={{

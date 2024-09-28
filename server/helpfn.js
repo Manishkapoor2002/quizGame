@@ -59,7 +59,13 @@ export const getQuestions = async (category, diffLevel) => {
 export const getPremQuestion = async (category, diffLevel) => {
   try {
     const prompt = `
-      Generate a JSON object containing 10 unique and interesting multiple-choice questions on the topic of "${category}" at the "${diffLevel}" difficulty level. Each question should have 4 distinct options. Ensure that the questions are diverse and engaging. Provide the output in a clean JSON format as follows:
+      Generate a JSON object containing 10 unique, engaging multiple-choice questions on the topic of "${category}" at the "${diffLevel}" difficulty level.
+      
+      Ensure the difficulty level is respected:
+      - For "hard" difficulty, provide in-depth, challenging questions that require deeper understanding of the topic.
+      - For "basic" difficulty, the questions should cover fundamental concepts.
+
+      Each question should have 4 distinct options, with one correct answer. Provide the output in a clean JSON format with no additional text, structured as follows:
       {
         "AllQuestions": [
           {
@@ -70,12 +76,13 @@ export const getPremQuestion = async (category, diffLevel) => {
         ],
         "CorrectSolutions": ["Correct option for question 1", "Correct option for question 2", ..., "Correct option for question 10"],
         "detailedExplanation": [
-          "Explanation for question 1",
-          "Explanation for question 2",
+          "In-depth explanation for question 1",
+          "In-depth explanation for question 2",
           ...,
-          "Explanation for question 10"
+          "In-depth explanation for question 10"
         ]
-      }`;
+      }
+    `;
 
     const result = await model.generateContent(prompt);
 
@@ -135,6 +142,7 @@ export const getPremQuestion = async (category, diffLevel) => {
     throw error;
   }
 };
+
 
 export const checkValidateCategories = (category) => {
   const categories = new Set([

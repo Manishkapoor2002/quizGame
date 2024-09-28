@@ -67,7 +67,7 @@ const userPersonalDetailSchema = new Schema({
 
 // User Ranking Schema
 const userRankingSchema = new Schema({
-  currentRank: { type: Number, default: 0 },
+  currentRank: { type: Number, default: 9999999 },
   totalScore: { type: Number, default: 0 },
   minRank: { type: Number, default: 0 }, // Best rank till now
 });
